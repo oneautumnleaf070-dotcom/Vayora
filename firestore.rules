@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'ADMIN' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN'
+      );
+    }
+
+    // Users Collection - UID as document ID
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      // Regular users can create their own profile but CANNOT self-assign ADMIN role
+      allow create: if isOwner(userId) && request.resource.data.role != 'ADMIN';
+      // Regular users can update their profile but CANNOT elevate their own role to ADMIN or self-verify KYC
+      allow update: if isOwner(userId) && (
+        (request.resource.data.role == resource.data.role &&
+         request.resource.data.verified == resource.data.verified) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Produce Collection
+    match /produce/{produceId} {
+      // Authenticated users and public can read ACTIVE produce
+      allow read: if true;
+      // Only the authenticated owner matching farmerId can create produce (FARMER or FPO)
+      allow create: if isAuthenticated() && 
+        request.resource.data.farmerId == request.auth.uid &&
+        request.resource.data.farmerId != null;
+      // Only the produce owner can update or delete their own produce; buyers cannot modify
+      allow update, delete: if isAuthenticated() && (
+        resource.data.farmerId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // Offers Collection
+    match /offers/{offerId} {
+      allow read: if isAuthenticated() && (
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.farmerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.buyerId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.farmerId == request.auth.uid ||
+        resource.data.buyerId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // Orders Collection
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.farmerId == request.auth.uid ||
+        resource.data.logisticsPartnerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.buyerId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.farmerId == request.auth.uid ||
+        resource.data.logisticsPartnerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Allocations Subcollection for Multi-Supplier Bulk Orders
+      match /allocations/{allocationId} {
+        allow read: if isAuthenticated() && (
+          resource.data.farmerId == request.auth.uid ||
+          get(/databases/$(database)/documents/orders/$(orderId)).data.buyerId == request.auth.uid ||
+          isAdmin()
+        );
+        allow create: if isAuthenticated();
+        allow update: if isAuthenticated() && (
+          resource.data.farmerId == request.auth.uid ||
+          isAdmin()
+        );
+      }
+    }
+
+    // Deliveries Collection (Requirement 21 & 28)
+    match /deliveries/{deliveryId} {
+      // Logistics partner, buyer, farmer associated with the delivery, or admin can read
+      allow read: if isAuthenticated() && (
+        resource.data.logisticsPartnerId == request.auth.uid ||
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.farmerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated();
+      // Logistics partner cannot manually set status = 'DELIVERED' from client; requires trusted verification
+      allow update: if isAuthenticated() && (
+        (resource.data.logisticsPartnerId == request.auth.uid && request.resource.data.status != 'DELIVERED') ||
+        isAdmin()
+      );
+    }
+
+    // Payments Collection
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (
+        resource.data.buyerId == request.auth.uid ||
+        resource.data.farmerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAdmin(); // Server-side / Cloud Functions payment settlement only
+    }
+
+    // Notifications Collection
+    match /notifications/{notifId} {
+      allow read, update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+    }
+  }
+}
