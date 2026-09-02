@@ -5,7 +5,7 @@ import { formatINR } from '../../utils/helpers';
 import { DemandChart } from './DemandChart';
 
 export interface PriceRecommendationCardProps {
-  recommendation: AIPriceRecommendation & { source?: 'LIVE_GEMINI' | 'DEMO_AI_INSIGHT' };
+  recommendation: AIPriceRecommendation & { source?: 'LIVE_GEMINI' | 'DEMO_AI_INSIGHT' | 'UNAVAILABLE' };
   expectedPrice?: number;
   onAcceptPrice?: (price: number) => void;
   showForecastChart?: boolean;
@@ -23,7 +23,7 @@ export const PriceRecommendationCard: React.FC<PriceRecommendationCardProps> = (
     LOW: { bg: 'bg-slate-100 text-slate-700 border-slate-300', dot: 'bg-slate-500' },
   };
 
-  const isDemo = recommendation.source === 'DEMO_AI_INSIGHT' || !recommendation.source;
+  const isDemo = recommendation.source !== 'LIVE_GEMINI';
 
   return (
     <div className="space-y-4">

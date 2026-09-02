@@ -3,7 +3,7 @@ import { cn } from '../../utils/helpers';
 
 export interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'slate' | 'verified';
+  variant?: 'green' | 'blue' | 'amber' | 'red' | 'purple' | 'slate' | 'teal' | 'verified';
   size?: 'sm' | 'md';
   className?: string;
   dot?: boolean;
@@ -28,6 +28,7 @@ export const Badge: React.FC<BadgeProps> = ({
     red: 'bg-red-50 text-red-800 border border-red-200/80',
     purple: 'bg-purple-50 text-purple-800 border border-purple-200/80',
     slate: 'bg-slate-100 text-slate-700 border border-slate-200',
+    teal: 'bg-teal-50 text-teal-800 border border-teal-200/80',
     verified: 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-semibold shadow-xs',
   };
 
@@ -38,6 +39,7 @@ export const Badge: React.FC<BadgeProps> = ({
     red: 'bg-red-500',
     purple: 'bg-purple-500',
     slate: 'bg-slate-500',
+    teal: 'bg-teal-500',
     verified: 'bg-emerald-600',
   };
 

@@ -478,6 +478,7 @@ export async function executeBulkOrderReservation(
     buyerOrganization: buyerUser.organizationName,
     farmerId: matchingResult.suppliers[0]?.farmerId || 'bulk_supplier',
     farmerName: `Bulk Coordinated Group (${matchingResult.suppliers.length} Suppliers)`,
+    produceId: 'bulk_split',
     cropName: 'Tomato',
     quantity: matchingResult.allocatedQuantity,
     unit: 'kg',

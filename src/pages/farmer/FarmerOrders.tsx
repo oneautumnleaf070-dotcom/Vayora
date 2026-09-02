@@ -140,7 +140,7 @@ export const FarmerOrders: React.FC = () => {
                       </p>
                       {isBulk && (
                         <p className="text-[11px] text-teal-800 font-medium">
-                          Total Buyer Demand: {o.requiredQuantity || o.quantity} kg
+                          Total Buyer Demand: {o.quantity} kg
                         </p>
                       )}
                       <p className="text-[11px] text-slate-600">Rate: {formatINR(o.pricePerUnit)}/{o.unit}</p>
@@ -159,7 +159,7 @@ export const FarmerOrders: React.FC = () => {
                         OTP: {o.pickupOtp || '719302'}
                       </p>
                       <p className="text-[10px] text-slate-500">
-                        {o.status === 'PLACED' || o.status === 'PAYMENT_CONFIRMED' || o.status === 'ASSIGNED'
+                        {o.status === 'PLACED' || o.status === 'PAYMENT_CONFIRMED' || o.status === 'LOGISTICS_ASSIGNED'
                           ? 'Awaiting carrier arrival at farm gate'
                           : 'Produce successfully loaded & departed'}
                       </p>

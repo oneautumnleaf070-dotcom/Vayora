@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useLanguage } from '../../context/LanguageContext';
 import {
   Sprout,
   Bell,
@@ -21,7 +20,6 @@ import { Notification } from '../../types';
 
 export const Header: React.FC = () => {
   const { user, role, logout } = useAuth();
-  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -51,7 +49,7 @@ export const Header: React.FC = () => {
     }
   };
 
-  const roleNavLinks = {
+  const roleNavLinks: Record<string, { label: string; path: string; highlight?: boolean }[]> = {
     FARMER: [
       { label: 'Dashboard', path: '/farmer/dashboard' },
       { label: '+ List Produce', path: '/farmer/produce/new', highlight: true },
@@ -62,8 +60,7 @@ export const Header: React.FC = () => {
     FPO: [
       { label: 'FPO Hub', path: '/fpo/dashboard' },
       { label: '+ Bulk Listing', path: '/farmer/produce/new', highlight: true },
-      { label: 'Member Inventory', path: '/farmer/produce' },
-      { label: 'Member Offers', path: '/farmer/offers' },
+      { label: 'Member Produce', path: '/farmer/offers' },
       { label: 'Bulk Orders', path: '/farmer/orders' },
     ],
     BUYER: [
@@ -79,11 +76,10 @@ export const Header: React.FC = () => {
       { label: 'Admin Center', path: '/admin/dashboard' },
       { label: 'User Management', path: '/admin/users', highlight: true },
       { label: 'Marketplace', path: '/buyer/marketplace' },
-      { label: 'Fleet Operations', path: '/logistics/dashboard' },
     ],
   };
 
-  const publicNavLinks = [
+  const publicNavLinks: { label: string; path: string; highlight?: boolean }[] = [
     { label: 'Marketplace', path: '/buyer/marketplace' },
     { label: 'How It Works', path: '/#how-it-works' },
     { label: 'For Farmers', path: '/#for-farmers' },
@@ -142,33 +138,7 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Right Action Icons & Profile */}
-        <div className="flex items-center gap-2.5">
-          {/* Global Language Toggle */}
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-[11px] font-bold">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                language === 'en'
-                  ? 'bg-white text-brand-900 shadow-2xs font-extrabold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-              aria-label="Switch Language to English"
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLanguage('hi')}
-              className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                language === 'hi'
-                  ? 'bg-brand-700 text-white shadow-2xs font-extrabold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-              aria-label="Switch Language to Hindi"
-            >
-              हिं
-            </button>
-          </div>
-
+        <div className="flex items-center gap-3">
           {user ? (
             <>
               {/* Role Badge */}
@@ -248,6 +218,8 @@ export const Header: React.FC = () => {
                     setShowUserMenu(!showUserMenu);
                     setShowNotifMenu(false);
                   }}
+                  aria-label="Account menu"
+                  aria-expanded={showUserMenu}
                   className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
                 >
                   <img
@@ -307,6 +279,22 @@ export const Header: React.FC = () => {
             </>
           ) : (
             <div className="flex items-center gap-2">
+              {/* Unobtrusive secondary portals — small, muted, desktop-only */}
+              <div className="hidden lg:flex items-center gap-2.5 pr-2.5 mr-1 border-r border-slate-200">
+                <Link
+                  to="/admin/login"
+                  className="text-[11px] font-semibold text-slate-400 hover:text-purple-700 transition-colors"
+                >
+                  Admin
+                </Link>
+                <Link
+                  to="/logistics/login"
+                  className="text-[11px] font-semibold text-slate-400 hover:text-amber-700 transition-colors"
+                >
+                  Fleet Partner
+                </Link>
+              </div>
+
               <Link
                 to="/login"
                 className="px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
@@ -325,6 +313,8 @@ export const Header: React.FC = () => {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
             className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 xl:hidden"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -361,6 +351,22 @@ export const Header: React.FC = () => {
               >
                 Get Started
               </Link>
+              <div className="flex items-center justify-center gap-4 pt-2">
+                <Link
+                  to="/admin/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-[11px] font-semibold text-slate-400 hover:text-purple-700"
+                >
+                  Admin Portal
+                </Link>
+                <Link
+                  to="/logistics/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-[11px] font-semibold text-slate-400 hover:text-amber-700"
+                >
+                  Fleet Partner Login
+                </Link>
+              </div>
             </div>
           )}
         </div>

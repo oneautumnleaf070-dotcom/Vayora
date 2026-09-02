@@ -114,7 +114,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Delivery Handover Verification" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Delivery Handover Verification" maxWidth="md">
       <div className="space-y-6">
         {/* Navigation Tabs */}
         <div className="flex border-b border-slate-200">

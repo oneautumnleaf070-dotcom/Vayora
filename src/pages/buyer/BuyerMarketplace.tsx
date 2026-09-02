@@ -119,7 +119,7 @@ export const BuyerMarketplace: React.FC = () => {
         <div className="flex items-center gap-3">
           <Link to="/buyer/bulk-matching">
             <Button
-              variant="accent"
+              variant="amber"
               size="lg"
               leftIcon={<Layers className="w-4 h-4" />}
             >

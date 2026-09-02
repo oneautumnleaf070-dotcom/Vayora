@@ -19,8 +19,6 @@ import {
   Sprout,
   DollarSign,
   Wallet,
-  FileSpreadsheet,
-  History,
 } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 
@@ -60,14 +58,11 @@ export const Sidebar: React.FC = () => {
         return [
           { label: 'Active Deliveries', path: '/logistics/dashboard', icon: <Truck className="w-4 h-4" /> },
           { label: 'QR / OTP Verification', path: '/logistics/verify', icon: <QrCode className="w-4 h-4" />, highlight: true },
-          { label: 'Fleet Analytics', path: '/logistics/analytics', icon: <TrendingUp className="w-4 h-4" /> },
         ];
       case 'ADMIN':
         return [
           { label: 'Overview & Metrics', path: '/admin/dashboard', icon: <BarChart3 className="w-4 h-4" /> },
           { label: 'User Directory', path: '/admin/users', icon: <Users className="w-4 h-4" /> },
-          { label: 'Analytics & Reports', path: '/admin/reports', icon: <FileSpreadsheet className="w-4 h-4" />, highlight: true },
-          { label: 'Governance Audit Logs', path: '/admin/audit-logs', icon: <History className="w-4 h-4" /> },
           { label: 'Live Marketplace', path: '/buyer/marketplace', icon: <Store className="w-4 h-4" /> },
           { label: 'Bulk Matcher Engine', path: '/buyer/bulk-matching', icon: <Layers className="w-4 h-4" /> },
           { label: 'Logistics Fleet', path: '/logistics/dashboard', icon: <Truck className="w-4 h-4" /> },
@@ -77,24 +72,15 @@ export const Sidebar: React.FC = () => {
     }
   };
 
-  const getSectionHeading = () => {
-    switch (role) {
-      case 'FARMER':
-        return 'Producer Navigation';
-      case 'FPO':
-        return 'Producer Navigation';
-      case 'BUYER':
-        return 'Buyer Tools';
-      case 'LOGISTICS':
-        return 'Fleet Operations';
-      case 'ADMIN':
-        return 'Administration';
-      default:
-        return 'Navigation';
-    }
-  };
-
   const links = getLinks();
+
+  const sectionLabel: Record<string, string> = {
+    FARMER: 'Producer Navigation',
+    FPO: 'Producer Navigation',
+    BUYER: 'Buyer Tools',
+    LOGISTICS: 'Fleet Operations',
+    ADMIN: 'Administration',
+  };
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200/80 p-4 hidden md:flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
@@ -120,7 +106,7 @@ export const Sidebar: React.FC = () => {
         {/* Navigation list */}
         <nav className="space-y-1">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">
-            {getSectionHeading()}
+            {sectionLabel[role] || 'Navigation'}
           </p>
           {links.map((item) => {
             const isActive = location.pathname === item.path;

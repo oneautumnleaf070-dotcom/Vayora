@@ -419,6 +419,8 @@ export const SEED_DELIVERIES: Delivery[] = [
     deliveryLocation: 'Metro Fresh Central Distribution Center, Sector 19, Vashi APMC Hub, Navi Mumbai',
     pickupCoords: { lat: 19.9975, lng: 73.7898, address: 'Patil Farm Gate, Nashik' },
     deliveryCoords: { lat: 19.0760, lng: 72.8777, address: 'Vashi APMC Hub, Navi Mumbai' },
+    distanceKm: 168.4,
+    estimatedTimeMinutes: 215,
     estimatedDistanceKm: 168.4,
     estimatedTimeMins: 215,
     status: 'IN_TRANSIT',
