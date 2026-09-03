@@ -29,6 +29,7 @@ import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { AgriMap } from '../../components/map/AgriMap';
 import { DemandChart } from '../../components/ai/DemandChart';
+import { Reveal } from '../../components/common/Reveal';
 import { formatINR, formatNumber } from '../../utils/helpers';
 
 export const LandingPage: React.FC = () => {
@@ -260,7 +261,7 @@ export const LandingPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 2. WHY VAYORA? — SIX CLEAN FEATURE BLOCKS */}
       {/* ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Reveal as="section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-12 sm:mb-16">
           <span className="text-xs font-bold text-brand-700 uppercase tracking-wider">
             Built For Indian Agri-Trade
@@ -273,7 +274,7 @@ export const LandingPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 stagger-children">
           {/* Feature 1 */}
           <div className="p-7 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-3.5">
             <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center border border-brand-200/60">
@@ -340,12 +341,12 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ========================================================================= */}
       {/* 3. HOW VAYORA WORKS — SIX-STEP CONNECTED WORKFLOW */}
       {/* ========================================================================= */}
-      <section id="how-it-works" className="bg-slate-50/80 py-16 sm:py-24 border-y border-slate-200/70">
+      <Reveal as="section" id="how-it-works" className="bg-slate-50/80 py-16 sm:py-24 border-y border-slate-200/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-xs font-bold text-brand-700 uppercase tracking-wider">
@@ -360,7 +361,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* 6-Step Workflow Timeline */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 relative stagger-children">
             {[
               {
                 step: '01',
@@ -417,12 +418,12 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ========================================================================= */}
       {/* 4. AI MARKET INTELLIGENCE SECTION */}
       {/* ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Reveal as="section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           {/* Left Description */}
           <div className="lg:col-span-5 space-y-6">
@@ -494,12 +495,12 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ========================================================================= */}
       {/* 5. SMART BULK MATCHING SECTION */}
       {/* ========================================================================= */}
-      <section className="bg-gradient-to-b from-slate-50/60 via-emerald-50/30 to-slate-50/60 py-16 sm:py-24 border-y border-slate-200/80">
+      <Reveal as="section" className="bg-gradient-to-b from-slate-50/60 via-emerald-50/30 to-slate-50/60 py-16 sm:py-24 border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold text-teal-800 uppercase tracking-wider">
@@ -539,7 +540,7 @@ export const LandingPage: React.FC = () => {
                 Automated Multi-Supplier Allocation:
               </span>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-children">
                 {bulkSuppliers.map((s, idx) => (
                   <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2 hover:border-brand-400 transition-colors shadow-2xs">
                     <div className="flex items-center justify-between">
@@ -590,12 +591,12 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ========================================================================= */}
       {/* 6. LOGISTICS SECTION — "FROM FARM GATE TO BUYER" */}
       {/* ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Reveal as="section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">
@@ -666,12 +667,12 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ========================================================================= */}
       {/* 7. TRUSTED DELIVERY SECTION — QR & OTP VERIFICATION */}
       {/* ========================================================================= */}
-      <section className="bg-slate-900 text-white py-16 sm:py-24">
+      <Reveal as="section" className="bg-slate-900 text-white py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
@@ -686,7 +687,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Workflow Steps */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto stagger-children">
             <div className="p-6 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-3 text-center">
               <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mx-auto font-bold">
                 1
@@ -728,12 +729,12 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ========================================================================= */}
       {/* 8. VALUE PILLARS FOR FARMERS & BUYERS */}
       {/* ========================================================================= */}
-      <section id="for-farmers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <Reveal as="section" id="for-farmers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <span className="text-xs font-bold text-brand-700 uppercase tracking-wider">
             Tailored For Ecosystem Stakeholders
@@ -818,12 +819,12 @@ export const LandingPage: React.FC = () => {
             </Button>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* ========================================================================= */}
       {/* 9. FINAL CALL TO ACTION */}
       {/* ========================================================================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Reveal as="section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-brand-950 text-white rounded-3xl p-8 sm:p-14 text-center space-y-6 relative overflow-hidden shadow-xl border border-brand-900">
           <div className="max-w-2xl mx-auto space-y-3">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
@@ -853,7 +854,7 @@ export const LandingPage: React.FC = () => {
             </Button>
           </div>
         </div>
-      </section>
+      </Reveal>
     </div>
   );
 };

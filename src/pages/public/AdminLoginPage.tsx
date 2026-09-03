@@ -23,8 +23,10 @@ export const AdminLoginPage: React.FC = () => {
       newAccountMessage={
         <>
           This phone number isn't linked to a VAYORA account yet. Administrator accounts
-          can't be created here — they're promoted from an existing account by another
-          administrator via the Firebase Console (see <code className="text-purple-800 font-mono">docs/ADMIN_SETUP.md</code>).
+          can't be self-registered here — they're provisioned directly by whoever runs
+          the platform (see <code className="text-purple-800 font-mono">server/scripts/seed.js</code>{' '}
+          for the demo admin account, or insert a row with <code className="text-purple-800 font-mono">role='ADMIN'</code>{' '}
+          in the database for a real deployment).
           If you're a farmer, buyer, or logistics partner, please register normally instead.
         </>
       }

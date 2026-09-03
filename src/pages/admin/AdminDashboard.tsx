@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getAllRegisteredUsers, setUserVerification } from '../../services/authService';
-import { getStoredOrders } from '../../services/orderService';
+import { getOrdersByUser } from '../../services/orderService';
 import { getStoredProduce } from '../../services/produceService';
-import { getStoredDeliveries } from '../../services/deliveryService';
+import { getAllDeliveries } from '../../services/deliveryService';
 import { User, Order, Produce, Delivery } from '../../types';
 import {
   ShieldCheck,
@@ -43,17 +43,15 @@ export const AdminDashboard: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      // NOTE (flagged per Task 3, not changed): users come from Firestore via
-      // getAllRegisteredUsers(), but orders/produce/deliveries currently read
-      // from localStorage via getStored*(). This means admin metrics reflect
-      // this browser's local demo state, not a shared server source of truth.
-      // Unifying all four on Firestore is a deliberate follow-up decision,
-      // not made here without explicit approval.
+      // All four now come from the same Postgres-backed API — users,
+      // produce and deliveries hit their admin "list everything" branches
+      // server-side (gated on the caller's JWT role being ADMIN), and
+      // orders' own ListByUser already returns every order for ADMIN.
       const [u, o, p, d] = await Promise.all([
         getAllRegisteredUsers(),
-        Promise.resolve(getStoredOrders()),
-        Promise.resolve(getStoredProduce()),
-        Promise.resolve(getStoredDeliveries()),
+        getOrdersByUser(user?.id || '', 'ADMIN'),
+        getStoredProduce(),
+        getAllDeliveries(),
       ]);
       setUsers(u);
       setOrders(o);
@@ -142,7 +140,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Primary KPI Cards (Requirement 27) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-children">
         <StatCard
           title="Total Users"
           value={totalUsersCount}

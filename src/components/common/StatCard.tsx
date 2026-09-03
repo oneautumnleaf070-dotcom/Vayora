@@ -35,7 +35,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <Card
       className={cn(
-        'p-5 transition-all duration-200',
+        'p-5 transition-all duration-200 ease-fluid',
         onClick && 'cursor-pointer hover:border-brand-300'
       )}
       onClick={onClick}

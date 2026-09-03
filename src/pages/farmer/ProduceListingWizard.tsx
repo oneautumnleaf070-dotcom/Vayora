@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useLanguage } from '../../context/LanguageContext';
 import { ProduceCategory, QualityGrade, AIPriceRecommendation } from '../../types';
 import { getPriceRecommendation, ExtendedAIRecommendation } from '../../services/aiService';
 import { addProduce } from '../../services/produceService';
@@ -23,7 +22,6 @@ import {
   Building,
   Users,
   Tractor,
-  Check,
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
@@ -45,20 +43,8 @@ const LOCATION_PRESETS: Record<string, { lat: number; lng: number }> = {
   'Mumbai, Maharashtra': { lat: 19.076, lng: 72.8777 },
 };
 
-const COMMON_CROP_PRESETS = [
-  { name: 'Tomato', category: 'VEGETABLES' as ProduceCategory, defaultPrice: 30, unit: 'kg' },
-  { name: 'Red Onion', category: 'VEGETABLES' as ProduceCategory, defaultPrice: 26, unit: 'kg' },
-  { name: 'Potato', category: 'VEGETABLES' as ProduceCategory, defaultPrice: 22, unit: 'kg' },
-  { name: 'Basmati Rice', category: 'GRAINS' as ProduceCategory, defaultPrice: 48, unit: 'kg' },
-  { name: 'Wheat (Sharbati)', category: 'GRAINS' as ProduceCategory, defaultPrice: 32, unit: 'kg' },
-  { name: 'Green Chilli', category: 'VEGETABLES' as ProduceCategory, defaultPrice: 45, unit: 'kg' },
-  { name: 'Organic Turmeric', category: 'SPICES' as ProduceCategory, defaultPrice: 110, unit: 'kg' },
-  { name: 'Soybean', category: 'PULSES' as ProduceCategory, defaultPrice: 42, unit: 'kg' },
-];
-
 export const ProduceListingWizard: React.FC = () => {
   const { user } = useAuth();
-  const { language } = useLanguage();
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -72,9 +58,9 @@ export const ProduceListingWizard: React.FC = () => {
   const [expectedPrice, setExpectedPrice] = useState<number>(30);
   const [harvestDate, setHarvestDate] = useState('2026-08-28');
   const [expiryDate, setExpiryDate] = useState('2026-09-10');
-  const [location, setLocation] = useState(user?.location || 'Nashik, Maharashtra');
-  const [latitude, setLatitude] = useState(19.9975);
-  const [longitude, setLongitude] = useState(73.7898);
+  const [location, setLocation] = useState(user?.location || 'Chennai');
+  const [latitude, setLatitude] = useState(13.0827);
+  const [longitude, setLongitude] = useState(80.2707);
   const [organicCertified, setOrganicCertified] = useState(false);
 
   // Images state
@@ -129,16 +115,9 @@ export const ProduceListingWizard: React.FC = () => {
     setImages(getPresetImageForCrop(cropName));
   }, [cropName, qualityGrade, quantity, location]);
 
-  const handleSelectPreset = (preset: typeof COMMON_CROP_PRESETS[0]) => {
-    setCropName(preset.name);
-    setCategory(preset.category);
-    setExpectedPrice(preset.defaultPrice);
-    showToast('info', 'Crop Selected', `${preset.name} loaded with recommended presets.`);
-  };
-
   const handleAdoptAIPrice = (price: number) => {
     setExpectedPrice(price);
-    showToast('success', 'AI Suggested Price Adopted', `Your asking price is updated to ₹${price}/${unit}.`);
+    showToast('success', 'AI Indicative Price Adopted', `Target asking price updated to ₹${price}/${unit}.`);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,19 +150,19 @@ export const ProduceListingWizard: React.FC = () => {
     const errors: Record<string, string> = {};
 
     if (!cropName.trim()) {
-      errors.cropName = 'Please enter or select a crop name.';
+      errors.cropName = 'Crop name is required.';
     }
     if (!quantity || quantity <= 0) {
-      errors.quantity = 'Quantity must be at least 1.';
+      errors.quantity = 'Quantity must be greater than 0.';
     }
     if (!expectedPrice || expectedPrice <= 0) {
-      errors.expectedPrice = 'Please enter your asking price.';
+      errors.expectedPrice = 'Expected price must be greater than ₹0.';
     }
     if (!harvestDate) {
       errors.harvestDate = 'Harvest date is required.';
     }
     if (!location.trim()) {
-      errors.location = 'Please provide farm pickup location.';
+      errors.location = 'Farm/Pickup location is required.';
     }
 
     setValidationErrors(errors);
@@ -195,7 +174,7 @@ export const ProduceListingWizard: React.FC = () => {
     if (validateForm()) {
       setShowConfirmModal(true);
     } else {
-      showToast('error', 'Please Complete Highlighted Fields', 'Fill in the required details to list your crop.');
+      showToast('error', 'Form Incomplete', 'Please fix the highlighted fields before submitting.');
     }
   };
 
@@ -255,19 +234,18 @@ export const ProduceListingWizard: React.FC = () => {
         images: finalImageUrls,
         status: 'ACTIVE',
         organicCertified,
-        verifiedSeller: user.verified ?? false,
       });
 
       showToast(
         'success',
-        language === 'hi' ? 'फसल सफलतापूर्वक दर्ज की गई!' : 'Produce Published Successfully!',
-        `${newListing.cropName} (${newListing.quantity} ${newListing.unit}) is now live for verified commercial buyers.`
+        'Produce Published Successfully!',
+        `${newListing.cropName} (${newListing.quantity} ${newListing.unit}) is now ACTIVE and visible to verified buyers.`
       );
 
       setShowConfirmModal(false);
       navigate('/farmer/produce');
     } catch (err: any) {
-      showToast('error', 'Publish Failed', err.message || 'Could not save listing to Firestore.');
+      showToast('error', 'Publish Failed', err.message || 'Could not save listing.');
     } finally {
       setSubmitting(false);
     }
@@ -277,67 +255,45 @@ export const ProduceListingWizard: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16">
-      {/* Header Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-soft">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-700 text-white flex items-center justify-center shadow-xs">
-              {isFPO ? <Building className="w-5 h-5" /> : <Tractor className="w-5 h-5" />}
-            </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              {isFPO ? 'List Collective Member Harvest' : 'List My Harvest for Direct Buyer Sale'}
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+              <Sprout className="w-6 h-6 text-brand-700" />
+              List New Harvest with AI-Assisted Indicative Pricing
             </h1>
             <Badge variant={isFPO ? 'teal' : 'green'} size="sm">
               {isFPO ? 'FPO Collective Producer' : 'Individual Farmer'}
             </Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
-            Publish harvest batches directly to verified commercial buyers with live Mandi price advisory.
+          <p className="text-xs text-slate-500 mt-1">
+            Publish produce directly to verified commercial buyers with real-time APMC Mandi benchmark analytics.
           </p>
         </div>
+
+        {isFPO && (
+          <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-2xl flex items-center gap-2 text-xs text-teal-900">
+            <Building className="w-4 h-4 text-teal-700 shrink-0" />
+            <span>FPO Mode: Produce will be tagged under <strong>{user?.organizationName || 'FPO Collective'}</strong>.</span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Farmer Friendly Listing Form */}
-        <div className="lg:col-span-7 space-y-6">
-          <form onSubmit={handleInitiateConfirm} className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-soft space-y-6">
+        {/* Form Column */}
+        <div className="lg:col-span-6 space-y-6">
+          <form onSubmit={handleInitiateConfirm} className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-soft space-y-5">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider">
-                1. Crop & Harvest Details
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                1. Harvest & Commodity Details
               </h3>
-              <span className="text-xs text-slate-400 font-semibold">* Required</span>
+              <span className="text-[11px] text-slate-400">* Required Fields</span>
             </div>
 
-            {/* Quick Crop Selector Chips */}
-            <div className="space-y-2">
-              <label className="block text-xs sm:text-sm font-bold text-slate-800">
-                Quick Select Common Crops (Tap to pick)
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {COMMON_CROP_PRESETS.map((preset) => {
-                  const isSelected = cropName.toLowerCase() === preset.name.toLowerCase();
-                  return (
-                    <button
-                      key={preset.name}
-                      type="button"
-                      onClick={() => handleSelectPreset(preset)}
-                      className={`min-h-[40px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                        isSelected
-                          ? 'bg-emerald-700 text-white shadow-xs'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                      }`}
-                    >
-                      {isSelected && <Check className="w-3.5 h-3.5" />}
-                      <span>{preset.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Crop Name Custom Input */}
+            {/* Crop Name */}
             <div className="space-y-1.5">
-              <label className="block text-xs sm:text-sm font-bold text-slate-800">
+              <label className="block text-xs font-bold text-slate-700">
                 Crop / Product Name *
               </label>
               <input
@@ -345,44 +301,43 @@ export const ProduceListingWizard: React.FC = () => {
                 value={cropName}
                 onChange={(e) => setCropName(e.target.value)}
                 placeholder="e.g. Tomato, Red Onion, Basmati Rice"
-                className={`w-full min-h-[48px] px-4 py-3 bg-slate-50 rounded-2xl border text-sm font-bold focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none ${
+                className={`w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border text-xs font-semibold focus:bg-white focus:border-brand-500 outline-none ${
                   validationErrors.cropName ? 'border-red-400 bg-red-50' : 'border-slate-200'
                 }`}
                 required
               />
               {validationErrors.cropName && (
-                <p className="text-xs text-red-600 font-semibold flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" /> {validationErrors.cropName}
+                <p className="text-[11px] text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {validationErrors.cropName}
                 </p>
               )}
             </div>
 
-            {/* Category & Quality Grade */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800">Crop Category *</label>
+                <label className="block text-xs font-bold text-slate-700">Category *</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value as ProduceCategory)}
-                  className="w-full min-h-[48px] px-3.5 py-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs sm:text-sm font-bold focus:bg-white focus:border-brand-500 outline-none"
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold focus:bg-white focus:border-brand-500 outline-none"
                 >
-                  <option value="VEGETABLES">Vegetables (सब्जियां)</option>
-                  <option value="FRUITS">Fruits (फल)</option>
-                  <option value="GRAINS">Grains / Cereals (अनाज)</option>
-                  <option value="PULSES">Pulses (दालें)</option>
-                  <option value="SPICES">Spices (मसाले)</option>
-                  <option value="ORGANIC">Certified Organic (जैविक)</option>
+                  <option value="VEGETABLES">Vegetables</option>
+                  <option value="FRUITS">Fruits</option>
+                  <option value="GRAINS">Grains</option>
+                  <option value="PULSES">Pulses</option>
+                  <option value="SPICES">Spices</option>
+                  <option value="ORGANIC">Organic</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800">Quality Grade *</label>
+                <label className="block text-xs font-bold text-slate-700">Quality Grade *</label>
                 <select
                   value={qualityGrade}
                   onChange={(e) => setQualityGrade(e.target.value as QualityGrade)}
-                  className="w-full min-h-[48px] px-3.5 py-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs sm:text-sm font-bold focus:bg-white focus:border-brand-500 outline-none"
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold focus:bg-white focus:border-brand-500 outline-none"
                 >
-                  <option value="Grade A">Grade A (Standard Table Grade)</option>
+                  <option value="Grade A">Grade A (Standard Table)</option>
                   <option value="Grade A (Export)">Grade A (Export / Premium)</option>
                   <option value="Grade B">Grade B (Processing Grade)</option>
                   <option value="Grade C">Grade C (Local Consumption)</option>
@@ -391,31 +346,30 @@ export const ProduceListingWizard: React.FC = () => {
               </div>
             </div>
 
-            {/* Harvest Quantity & Unit */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800">Harvest Quantity *</label>
+                <label className="block text-xs font-bold text-slate-700">Harvest Quantity *</label>
                 <input
                   type="number"
                   min="1"
                   value={quantity}
                   onChange={(e) => setQuantity(Number(e.target.value))}
-                  className={`w-full min-h-[48px] px-4 py-3 bg-slate-50 rounded-2xl border text-base font-bold font-mono focus:bg-white focus:border-brand-500 outline-none ${
+                  className={`w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border text-xs font-bold font-mono focus:bg-white focus:border-brand-500 outline-none ${
                     validationErrors.quantity ? 'border-red-400 bg-red-50' : 'border-slate-200'
                   }`}
                   required
                 />
                 {validationErrors.quantity && (
-                  <p className="text-xs text-red-600 font-semibold">{validationErrors.quantity}</p>
+                  <p className="text-[11px] text-red-600">{validationErrors.quantity}</p>
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800">Unit of Measurement *</label>
+                <label className="block text-xs font-bold text-slate-700">Unit of Measurement *</label>
                 <select
                   value={unit}
                   onChange={(e) => setUnit(e.target.value as any)}
-                  className="w-full min-h-[48px] px-3.5 py-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs sm:text-sm font-bold focus:bg-white focus:border-brand-500 outline-none"
+                  className="w-full px-3 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold focus:bg-white focus:border-brand-500 outline-none"
                 >
                   <option value="kg">Kilograms (kg)</option>
                   <option value="quintal">Quintals (100 kg)</option>
@@ -425,33 +379,33 @@ export const ProduceListingWizard: React.FC = () => {
               </div>
             </div>
 
-            {/* Produce Photos */}
+            {/* Produce Image Upload */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs sm:text-sm">
-                <label className="font-bold text-slate-800">
-                  Produce Photos ({images.length} attached)
+              <div className="flex justify-between items-center text-xs">
+                <label className="font-bold text-slate-700">
+                  Produce Harvest Photos ({images.length} attached)
                 </label>
-                <span className="text-xs text-slate-400">Optional</span>
+                <span className="text-[11px] text-slate-400">Stored securely</span>
               </div>
 
-              <div className="grid grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-4 gap-2">
                 {images.slice(0, 3).map((img, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-200 group">
+                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group">
                     <img src={img} alt="produce" className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(idx)}
-                      className="absolute top-1.5 right-1.5 p-1 bg-black/70 text-white rounded-full opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
-                      aria-label="Remove image"
+                      className="absolute top-1 right-1 p-1 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
 
-                <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-600 bg-slate-50 hover:bg-emerald-50/50 flex flex-col items-center justify-center cursor-pointer transition-colors p-2 text-center">
-                  <Upload className="w-5 h-5 text-slate-500 mb-1" />
-                  <span className="text-xs font-bold text-slate-700">
+                {/* Upload Button */}
+                <label className="aspect-square rounded-xl border-2 border-dashed border-slate-300 hover:border-brand-500 bg-slate-50 hover:bg-emerald-50/50 flex flex-col items-center justify-center cursor-pointer transition-colors p-2 text-center">
+                  <Upload className="w-4 h-4 text-slate-500 mb-1" />
+                  <span className="text-[10px] font-bold text-slate-600">
                     {uploadingImage ? 'Uploading...' : '+ Add Photo'}
                   </span>
                   <input
@@ -465,48 +419,47 @@ export const ProduceListingWizard: React.FC = () => {
               </div>
             </div>
 
-            {/* Dates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800">Harvest Date *</label>
+                <label className="block text-xs font-bold text-slate-700">Harvest Date *</label>
                 <input
                   type="date"
                   value={harvestDate}
                   onChange={(e) => setHarvestDate(e.target.value)}
-                  className="w-full min-h-[48px] px-3.5 py-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs sm:text-sm font-medium focus:bg-white outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-medium focus:bg-white outline-none"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800">Estimated Shelf Life</label>
+                <label className="block text-xs font-bold text-slate-700">Estimated Shelf Life</label>
                 <input
                   type="date"
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
-                  className="w-full min-h-[48px] px-3.5 py-3 bg-slate-50 rounded-2xl border border-slate-200 text-xs sm:text-sm font-medium focus:bg-white outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-xs font-medium focus:bg-white outline-none"
                 />
               </div>
             </div>
 
-            {/* Target Price Section (High-Contrast Hero Input) */}
-            <div className="space-y-2 p-5 bg-emerald-50/80 rounded-3xl border-2 border-emerald-300">
-              <div className="flex flex-wrap justify-between items-center gap-2">
-                <label className="block text-xs sm:text-sm font-extrabold text-emerald-950">
+            {/* Expected Selling Price */}
+            <div className="space-y-1.5 p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200">
+              <div className="flex justify-between items-center">
+                <label className="block text-xs font-bold text-emerald-950">
                   Your Target Asking Price (₹/{unit}) *
                 </label>
                 {aiRecommendation && (
                   <button
                     type="button"
                     onClick={() => handleAdoptAIPrice(aiRecommendation.recommendedPrice)}
-                    className="min-h-[36px] px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
+                    className="text-[11px] font-bold text-brand-700 hover:underline flex items-center gap-1"
                   >
-                    <span>Adopt AI Price: {formatINR(aiRecommendation.recommendedPrice)}</span>
+                    Match AI: {formatINR(aiRecommendation.recommendedPrice)}
                   </button>
                 )}
               </div>
               <div className="relative mt-1">
-                <IndianRupee className="w-5 h-5 absolute left-4 top-3.5 text-emerald-700" />
+                <IndianRupee className="w-4 h-4 absolute left-3.5 top-3 text-emerald-700" />
                 <input
                   type="number"
                   step="0.5"
@@ -514,58 +467,61 @@ export const ProduceListingWizard: React.FC = () => {
                   value={expectedPrice}
                   onChange={(e) => setExpectedPrice(Number(e.target.value))}
                   placeholder="30"
-                  className={`w-full min-h-[52px] pl-11 pr-4 py-3 bg-white rounded-2xl border-2 text-xl font-extrabold font-mono text-emerald-950 focus:ring-4 focus:ring-emerald-200 outline-none ${
-                    validationErrors.expectedPrice ? 'border-red-400' : 'border-emerald-400'
+                  className={`w-full pl-10 pr-4 py-2.5 bg-white rounded-xl border text-base font-bold font-mono text-emerald-950 focus:ring-2 focus:ring-emerald-200 outline-none ${
+                    validationErrors.expectedPrice ? 'border-red-400' : 'border-emerald-300'
                   }`}
                   required
                 />
               </div>
-              <p className="text-xs text-emerald-900 font-medium">
-                💡 <strong>Fair Price Tip:</strong> 100% of this price goes directly to your bank account without middlemen fees.
-              </p>
+              {validationErrors.expectedPrice && (
+                <p className="text-[11px] text-red-600">{validationErrors.expectedPrice}</p>
+              )}
             </div>
 
-            {/* Location */}
+            {/* Location & GPS */}
             <div className="space-y-1.5">
-              <label className="block text-xs sm:text-sm font-bold text-slate-800">
-                Farm Gate / Village Pickup Location *
-              </label>
+              <label className="block text-xs font-bold text-slate-700">Farm Gate Pickup Location *</label>
               <div className="relative">
-                <MapPin className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
+                <MapPin className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. Nashik, Maharashtra"
-                  className={`w-full min-h-[48px] pl-11 pr-4 py-3 bg-slate-50 rounded-2xl border text-sm font-medium outline-none focus:bg-white ${
+                  placeholder="e.g. Chennai, Tamil Nadu"
+                  className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl border text-xs font-medium outline-none focus:bg-white ${
                     validationErrors.location ? 'border-red-400 bg-red-50' : 'border-slate-200'
                   }`}
                   required
                 />
               </div>
+              <div className="flex items-center gap-2 pt-1 text-[11px] text-slate-400">
+                <span>Coordinates:</span>
+                <span className="font-mono">{latitude.toFixed(4)}° N, {longitude.toFixed(4)}° E</span>
+              </div>
             </div>
 
-            <button
+            <Button
               type="submit"
-              className="w-full min-h-[52px] px-6 py-3.5 bg-brand-700 hover:bg-brand-800 text-white font-extrabold text-base rounded-2xl shadow-lg shadow-brand-700/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.99]"
-              aria-label="Review & Confirm Listing"
+              variant="primary"
+              className="w-full"
+              size="lg"
+              rightIcon={<ArrowRight className="w-4 h-4" />}
             >
-              <span>Review & Confirm Listing</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+              Review & Confirm Listing
+            </Button>
           </form>
         </div>
 
-        {/* Right Column: AI Indicative Price Guidance */}
-        <div className="lg:col-span-5 space-y-6">
+        {/* AI Indicative Price Column */}
+        <div className="lg:col-span-6 space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-emerald-600" />
-              Live Mandi Price Guidance
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-brand-700" />
+              AI-Assisted Indicative Price Guidance
             </h3>
             {calculatingAi && (
-              <span className="text-xs text-emerald-700 animate-pulse font-bold">
-                Recalculating...
+              <span className="text-xs text-brand-700 animate-pulse font-medium">
+                Recalculating APMC trends...
               </span>
             )}
           </div>
@@ -581,13 +537,13 @@ export const ProduceListingWizard: React.FC = () => {
             </div>
           ) : (
             <div className="p-12 text-center text-slate-400 bg-white rounded-3xl border border-slate-200">
-              Calculating AI Mandi Guidance...
+              Calculating AI Indicative Guidance...
             </div>
           )}
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal: Do NOT create Firestore doc before user confirms */}
       {showConfirmModal && (
         <Modal
           isOpen={showConfirmModal}
@@ -597,47 +553,56 @@ export const ProduceListingWizard: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-5">
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 text-xs sm:text-sm">
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3 text-xs">
               <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                <span className="text-slate-500 font-medium">Producer:</span>
-                <span className="font-bold text-slate-900">
+                <span className="text-slate-500">Producer Identity:</span>
+                <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                  {isFPO ? <Building className="w-3.5 h-3.5 text-teal-600" /> : <Tractor className="w-3.5 h-3.5 text-emerald-600" />}
                   {user?.name} ({isFPO ? 'FPO Collective' : 'Individual Farmer'})
                 </span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Crop & Quality:</span>
+                <span className="text-slate-500">Crop & Quality:</span>
                 <span className="font-bold text-slate-900">{cropName} ({qualityGrade})</span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Harvest Quantity:</span>
+                <span className="text-slate-500">Batch Quantity:</span>
                 <span className="font-bold font-mono text-slate-900">{quantity} {unit}</span>
               </div>
 
-              <div className="flex justify-between items-center bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
-                <span className="text-emerald-950 font-bold">Your Target Price:</span>
-                <span className="font-extrabold font-mono text-emerald-900 text-base">{formatINR(expectedPrice)} / {unit}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Your Target Asking Price:</span>
+                <span className="font-extrabold font-mono text-emerald-800 text-sm">{formatINR(expectedPrice)} / {unit}</span>
               </div>
 
+              {aiRecommendation && (
+                <div className="flex justify-between items-center bg-emerald-100/60 p-2.5 rounded-xl border border-emerald-200">
+                  <span className="text-emerald-950 font-bold">AI Indicative Range:</span>
+                  <span className="font-extrabold font-mono text-emerald-900">
+                    {formatINR(aiRecommendation.minimumPrice)} – {formatINR(aiRecommendation.maximumPrice)} / kg
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Pickup Location:</span>
+                <span className="text-slate-500">Pickup Location:</span>
                 <span className="font-bold text-slate-900">{location}</span>
               </div>
             </div>
 
-            <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-950 leading-relaxed flex items-start gap-2">
-              <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
               <span>
-                Once confirmed, this crop will be visible as <strong>ACTIVE</strong> to verified commercial buyers across India.
+                Once confirmed, this lot will be saved and listed as <strong>ACTIVE</strong> for verified buyers on the VAYORA marketplace.
               </span>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2.5 pt-2">
               <Button
                 variant="outline"
-                size="md"
-                className="flex-1 min-h-[48px]"
+                className="flex-1"
                 onClick={() => setShowConfirmModal(false)}
                 disabled={submitting}
               >
@@ -646,12 +611,11 @@ export const ProduceListingWizard: React.FC = () => {
 
               <Button
                 variant="primary"
-                size="md"
-                className="flex-1 min-h-[48px] bg-brand-700 hover:bg-brand-800 text-white font-bold"
+                className="flex-1"
                 onClick={handleFinalSubmit}
                 isLoading={submitting}
               >
-                Confirm & Publish
+                Confirm & Publish Listing
               </Button>
             </div>
           </div>

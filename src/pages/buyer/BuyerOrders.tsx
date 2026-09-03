@@ -62,7 +62,7 @@ export const BuyerOrders: React.FC = () => {
       {loading ? (
         <div className="p-16 text-center text-slate-400 bg-white rounded-3xl border border-slate-200 space-y-2">
           <RefreshCw className="w-5 h-5 text-brand-700 animate-spin mx-auto" />
-          <p className="text-xs">Loading orders from Cloud Firestore...</p>
+          <p className="text-xs">Loading orders...</p>
         </div>
       ) : (
         <div className="space-y-4">

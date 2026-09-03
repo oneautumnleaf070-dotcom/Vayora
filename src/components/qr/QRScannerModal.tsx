@@ -79,8 +79,8 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({
     }
   };
 
-  const handleQRDecoded = (decodedText: string) => {
-    stopScanner();
+  const handleQRDecoded = async (decodedText: string) => {
+    await stopScanner();
     const result = parseAndVerifyQRPayload(decodedText, orderId);
     if (result.isValid) {
       triggerSuccess(result);

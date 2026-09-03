@@ -204,7 +204,7 @@ export const FarmerDashboard: React.FC = () => {
       </Link>
 
       {/* KPI Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stagger-children">
         <StatCard
           title={t('farmer_kpi_harvest_title')}
           value={`${formatNumber(totalQuantityListed)} Quintals`}

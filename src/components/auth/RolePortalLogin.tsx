@@ -57,6 +57,7 @@ export const RolePortalLogin: React.FC<RolePortalLoginProps> = ({
   const [loading, setLoading] = useState(false);
   const [mismatchRole, setMismatchRole] = useState<UserRole | null>(null);
   const [noAccountFound, setNoAccountFound] = useState(false);
+  const [devOtp, setDevOtp] = useState<string | undefined>(undefined);
 
   // If already signed in, route them correctly instead of re-prompting for OTP.
   useEffect(() => {
@@ -82,13 +83,14 @@ export const RolePortalLogin: React.FC<RolePortalLoginProps> = ({
     try {
       const res = await sendOtp(formatted);
       if (res.success) {
+        setDevOtp(res.devOtp);
         setStep('otp');
-        showToast('info', 'OTP Sent', res.message);
+        showToast('info', 'Authenticator Code Ready', res.message);
       } else {
-        showToast('error', 'Failed to Send OTP', res.message);
+        showToast('error', 'Could Not Generate Code', res.message);
       }
     } catch (err: any) {
-      showToast('error', 'Authentication Error', err.message || 'Unable to send verification code. Please try again.');
+      showToast('error', 'Authentication Error', err.message || 'Unable to generate a verification code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -97,7 +99,7 @@ export const RolePortalLogin: React.FC<RolePortalLoginProps> = ({
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp || otp.trim().length < 6) {
-      showToast('error', 'Invalid Code', 'Please enter the 6-digit verification code sent to your phone.');
+      showToast('error', 'Invalid Code', 'Please enter the 6-digit code from your authenticator app.');
       return;
     }
 
@@ -245,7 +247,7 @@ export const RolePortalLogin: React.FC<RolePortalLoginProps> = ({
                   />
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  We will send a 6-digit verification code via SMS to this mobile number.
+                  We use an authenticator app (Google Authenticator, Authy, etc.) to generate your 6-digit sign-in code — no SMS required.
                 </p>
               </div>
 
@@ -257,13 +259,13 @@ export const RolePortalLogin: React.FC<RolePortalLoginProps> = ({
                 isLoading={loading}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Send Verification Code
+                Continue
               </Button>
             </form>
           ) : (
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className={`p-3 rounded-2xl border text-xs flex items-center justify-between ${theme.chipBg} ${theme.chipText}`}>
-                <span>Sent SMS code to <strong>{phone}</strong></span>
+                <span>Authenticator code for <strong>{phone}</strong></span>
                 <button
                   type="button"
                   onClick={() => setStep('phone')}
@@ -273,9 +275,16 @@ export const RolePortalLogin: React.FC<RolePortalLoginProps> = ({
                 </button>
               </div>
 
+              {devOtp && (
+                <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900">
+                  <p className="font-bold">Dev mode — current authenticator code</p>
+                  <p className="font-mono text-lg tracking-widest mt-1">{devOtp}</p>
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 block">
-                  Enter the 6-digit verification code
+                  Enter the 6-digit code from your authenticator app
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -309,7 +318,7 @@ export const RolePortalLogin: React.FC<RolePortalLoginProps> = ({
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-500">
             <Lock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Encrypted Firebase Authentication Session</span>
+            <span>Encrypted VAYORA Authentication Session</span>
           </div>
         </div>
 

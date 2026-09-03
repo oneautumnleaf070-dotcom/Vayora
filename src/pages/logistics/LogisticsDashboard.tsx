@@ -5,7 +5,6 @@ import { Delivery, DeliveryStatus, Order } from '../../types';
 import {
   getDeliveriesForLogisticsPartner,
   updateDeliveryStatus,
-  getStoredDeliveries,
 } from '../../services/deliveryService';
 import { getStoredOrders } from '../../services/orderService';
 import { optimizeRoute, RouteOptimizationResult } from '../../services/routeService';
@@ -48,11 +47,9 @@ export const LogisticsDashboard: React.FC = () => {
     if (!user) return;
     setLoading(true);
     try {
-      // Find deliveries assigned to this logistics partner (or fallback to all deliveries)
-      let list = await getDeliveriesForLogisticsPartner(user.id);
-      if (list.length === 0) {
-        list = getStoredDeliveries();
-      }
+      // Deliveries assigned to this logistics partner (the server resolves
+      // this authoritatively; every order carries a real assigned partner).
+      const list = await getDeliveriesForLogisticsPartner(user.id);
       setDeliveries(list);
 
       if (list.length > 0) {
@@ -152,7 +149,7 @@ export const LogisticsDashboard: React.FC = () => {
       </div>
 
       {/* Top 4 KPI Metrics (Requirement 3) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
         <StatCard
           title="Active Transit Missions"
           value={activeCount}

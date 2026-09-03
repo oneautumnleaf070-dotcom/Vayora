@@ -1,0 +1,51 @@
+# One command to run the whole stack locally:
+#   docker compose up --build
+# Then, once postgres+api are healthy, seed demo accounts (one-time):
+#   docker compose run --rm api node scripts/seed.js
+#
+# The frontend (Vite/React) runs separately via `npm run dev` in the
+# repo root — see README.md — since a hackathon judge iterating on the UI
+# wants Vite's HMR, not a rebuilt container on every save.
+#
+# api is a Node.js + Express server (src/index.js) — login uses TOTP
+# (RFC 6238) instead of SMS OTP; see server/src/routes/auth.js.
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: vayora_dev
+      POSTGRES_DB: vayora
+    ports:
+      - "5432:5432"
+    volumes:
+      - vayora_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: "5000"
+      DATABASE_URL: "postgres://postgres:vayora_dev@postgres:5432/vayora?sslmode=disable"
+      JWT_SECRET: "vayora-dev-secret-change-in-production"
+      OTP_MOCK_MODE: "true"
+      CORS_ORIGIN: "*"
+      ENVIRONMENT: "development"
+    ports:
+      - "5000:5000"
+
+volumes:
+  vayora_pg_data:

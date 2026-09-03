@@ -280,7 +280,7 @@ export const BuyerMarketplace: React.FC = () => {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
           {filteredListings.map((p) => {
             const distance = calculateDistanceKm(buyerCoords.lat, buyerCoords.lng, p.latitude, p.longitude);
             const isFPO = p.farmerType === 'FPO';

@@ -19,11 +19,11 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { OtpInput } from '../../components/auth/OtpInput';
 import { useToast } from '../../context/ToastContext';
-import { setupRecaptcha, sendPhoneOtp, verifyPhoneOtp } from '../../services/authService';
+import { sendPhoneOtp, verifyPhoneOtp } from '../../services/authService';
 
 export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, role, login } = useAuth();
+  const { user, role } = useAuth();
   const { showToast } = useToast();
 
   const [countryCode, setCountryCode] = useState('+91');
@@ -95,12 +95,6 @@ export const AdminLoginPage: React.FC = () => {
 
     setLoading(true);
     try {
-      // Setup reCAPTCHA if element exists
-      try {
-        setupRecaptcha('admin-recaptcha-container');
-      } catch (recaptchaErr) {
-        console.warn('reCAPTCHA setup warning:', recaptchaErr);
-      }
 
       const fullNumber = `${countryCode}${cleanPhone}`;
       const confirmationResult = await sendPhoneOtp(fullNumber);
@@ -143,19 +137,13 @@ export const AdminLoginPage: React.FC = () => {
       // In sandbox/demo mode, allow '123456' or '482915'
       const isDemo = otp === '123456' || otp === '482915';
 
-      let userProfile;
-      if (!isDemo) {
-        const verifyRes = await verifyPhoneOtp(otp);
-        if (verifyRes.success && verifyRes.user) {
-          userProfile = verifyRes.user;
-        } else {
-          userProfile = await login(fullNumber, 'ADMIN');
-        }
-      } else {
-        // Direct sandbox login verification
-        userProfile = await login(fullNumber, 'ADMIN');
+      const verifyRes = await verifyPhoneOtp(fullNumber, otp);
+      if (!verifyRes.success || !verifyRes.user) {
+        setError('OTP verification failed. Please try again.');
+        return;
       }
 
+      const userProfile = verifyRes.user;
       if (userProfile.role !== 'ADMIN') {
         setError('This phone number is not registered as an admin account. Contact super-admin to request access.');
         setShowSupportModal(true);
@@ -202,11 +190,10 @@ export const AdminLoginPage: React.FC = () => {
   const handleQuickDemoAdminLogin = async () => {
     setLoading(true);
     try {
-      await login('+919811122334', 'ADMIN');
-      showToast('success', 'Demo Admin Access', 'Signed in as VAYORA Super Administrator.');
-      navigate('/admin/dashboard', { replace: true });
-    } catch (e: any) {
-      setError(e.message || 'Demo login failed');
+      // Set demo OTP and verify
+      setOtp('123456');
+      setStep('OTP');
+      showToast('success', 'Demo Mode', 'Use OTP: 123456');
     } finally {
       setLoading(false);
     }

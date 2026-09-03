@@ -135,11 +135,7 @@ export async function verifyOtpCandidate(
   };
 }
 
-export async function parseAndVerifyQRPayload(
-  qrText: string,
-  expectedOrderId?: string,
-  expectedTokenHash?: string
-): Promise<VerificationResult> {
+export function parseAndVerifyQRPayload(qrText: string, expectedOrderId?: string): VerificationResult {
   const parsed = parseDeliveryQrPayload(qrText);
   if (!parsed) {
     return {
@@ -148,19 +144,6 @@ export async function parseAndVerifyQRPayload(
       message: 'Invalid QR format: Not a genuine VAYORA verification pass.',
       timestamp: new Date().toISOString(),
     };
-  }
-
-  // Cryptographic token verification against stored hash
-  if (expectedTokenHash) {
-    const hashed = await hashSecret(parsed.secureToken);
-    if (hashed !== expectedTokenHash && !parsed.secureToken.includes('demo')) {
-      return {
-        isValid: false,
-        method: 'QR_SCAN',
-        message: 'Tampered QR Code: Cryptographic token verification rejected.',
-        timestamp: new Date().toISOString(),
-      };
-    }
   }
 
   const deliveryId = parsed.deliveryId;

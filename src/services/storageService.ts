@@ -1,6 +1,3 @@
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase/config';
-
 // Curated high-res Indian agricultural commodity image presets for quick testing
 export const CROP_IMAGE_PRESETS: Record<string, string[]> = {
   'tomatoes': [
@@ -46,23 +43,14 @@ export const CROP_IMAGE_PRESETS: Record<string, string[]> = {
 
 export async function uploadProduceImage(
   file: File,
-  farmerId: string,
-  produceId: string
+  _farmerId: string,
+  _produceId: string
 ): Promise<string> {
-  // If Firebase storage is available and connected
-  if (storage && !import.meta.env.VITE_FIREBASE_API_KEY?.includes('Demo')) {
-    try {
-      const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const storageRef = ref(storage, `produce/${farmerId}/${produceId}/${Date.now()}_${sanitizedName}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
-      return downloadUrl;
-    } catch (e) {
-      console.warn('Firebase Storage upload failed or unconfigured, falling back to local base64 preview.', e);
-    }
-  }
-
-  // Fallback: Convert file to Base64 Data URL for instant offline capability
+  // The Go backend has no object-storage service (S3/GCS) wired up, so
+  // produce images are carried as Base64 data URLs end-to-end — stored
+  // straight in the produce.images JSONB column. This works fully offline
+  // and needs no cloud storage bucket, consistent with the mock-OTP /
+  // self-hosted-Postgres philosophy of the rest of this backend.
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {

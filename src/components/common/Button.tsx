@@ -22,7 +22,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none cursor-pointer';
+    'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 ease-snappy focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none disabled:active:scale-100 cursor-pointer';
 
   const sizeStyles = {
     sm: 'text-xs px-3 py-1.5 gap-1.5',
@@ -32,7 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      'bg-brand-700 hover:bg-brand-800 text-white shadow-sm hover:shadow focus:ring-brand-500 border border-brand-800',
+      'bg-brand-700 hover:bg-brand-800 text-white shadow-sm hover:shadow-md hover:-translate-y-px focus:ring-brand-500 border border-brand-800',
     secondary:
       'bg-emerald-50 hover:bg-emerald-100 text-brand-900 border border-emerald-200 focus:ring-brand-500',
     outline:
@@ -40,9 +40,9 @@ export const Button: React.FC<ButtonProps> = ({
     ghost:
       'bg-transparent hover:bg-slate-100 text-slate-700 hover:text-slate-900 focus:ring-slate-400',
     danger:
-      'bg-red-600 hover:bg-red-700 text-white shadow-sm focus:ring-red-500 border border-red-700',
+      'bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md focus:ring-red-500 border border-red-700',
     amber:
-      'bg-amber-500 hover:bg-amber-600 text-white shadow-sm focus:ring-amber-400 border border-amber-600',
+      'bg-amber-500 hover:bg-amber-600 text-white shadow-sm hover:shadow-md hover:-translate-y-px focus:ring-amber-400 border border-amber-600',
   };
 
   return (

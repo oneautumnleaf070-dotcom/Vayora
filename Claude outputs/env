@@ -1,0 +1,13 @@
+# =======================================================
+# VAYORA – Environment Configuration
+# =======================================================
+
+# Base URL of the self-hosted Node.js/Express API (see server/ and
+# docker-compose.yml). The default below matches `docker compose up` /
+# `npm start` in server/ with no PORT override. Realtime WebSocket updates
+# are derived automatically from this same URL (http -> ws), no separate
+# variable needed.
+VITE_API_URL="http://localhost:5000/api"
+
+# Optional: OpenRouteService API key for live GPS highway routing
+VITE_OPENROUTESERVICE_API_KEY=

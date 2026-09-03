@@ -118,7 +118,7 @@ export const RouteDetailPage: React.FC = () => {
   const handleUpdateStatus = async (nextStatus: any) => {
     if (!delivery || !user) return;
     try {
-      await updateDeliveryStatus(delivery.id, nextStatus, user.id, role);
+      await updateDeliveryStatus(delivery.id, nextStatus, role);
       setDelivery({ ...delivery, status: nextStatus });
       showToast('success', 'Status Updated', `Shipment is now ${nextStatus.replace(/_/g, ' ')}.`);
     } catch (e: any) {

@@ -56,7 +56,7 @@ export const OfferSummaryRow: React.FC<OfferSummaryRowProps> = ({
                   ? 'amber'
                   : isCountered
                   ? 'blue'
-                  : 'gray'
+                  : 'slate'
               }
               size="sm"
             >

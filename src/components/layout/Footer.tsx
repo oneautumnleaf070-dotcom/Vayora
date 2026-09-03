@@ -60,7 +60,7 @@ export const Footer: React.FC = () => {
 
           {/* For Stakeholders Col */}
           <div className="space-y-3.5 md:col-span-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">Portals & Roles</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">For</h4>
             <ul className="space-y-2.5 text-xs text-slate-400">
               <li>
                 <Link to="/farmer/dashboard" className="hover:text-white transition-colors">
@@ -73,13 +73,13 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/logistics/login" className="hover:text-amber-400 transition-colors">
-                  Fleet Partner Portal
+                <Link to="/logistics/dashboard" className="hover:text-white transition-colors">
+                  Logistics Partners
                 </Link>
               </li>
               <li>
-                <Link to="/admin/login" className="hover:text-purple-400 transition-colors">
-                  Admin Control Center
+                <Link to="/admin/dashboard" className="hover:text-white transition-colors">
+                  System Admin
                 </Link>
               </li>
             </ul>

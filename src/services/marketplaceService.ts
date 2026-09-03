@@ -1,7 +1,10 @@
+// Ports marketplaceService.ts. filterAndSortMarketplaceProduce and
+// getNearbyAlternativeSellers are pure functions with no Firebase/localStorage
+// dependency — confirmed during the port — so they are carried over
+// unchanged. Only getActiveMarketplaceProduce's fetch moves from
+// Firestore/localStorage to the Go backend's marketplace endpoint.
 import { Produce, ProduceCategory, QualityGrade } from '../types';
-import { getStoredProduce } from './produceService';
-import { db, isFirebaseConfigured } from '../firebase/config';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { api } from '../api/client';
 import { calculateDistanceKm } from '../utils/helpers';
 
 export interface MarketplaceFilterParams {
@@ -12,39 +15,17 @@ export interface MarketplaceFilterParams {
   minQuantity?: number;
   qualityGrade?: QualityGrade | 'ALL';
   farmerType?: 'ALL' | 'FPO' | 'FARMER';
-  maxDistanceKm?: number; // e.g. 25, 50, 100, 250, Infinity
+  maxDistanceKm?: number;
   sortBy: 'BEST_VALUE' | 'PRICE_LOW' | 'PRICE_HIGH' | 'DISTANCE' | 'QUANTITY';
 }
 
 export async function getActiveMarketplaceProduce(): Promise<Produce[]> {
-  // Try Firestore if real Firebase is configured
-  if (isFirebaseConfigured() && db) {
-    try {
-      const q = query(
-        collection(db, 'produce'),
-        where('status', 'in', ['ACTIVE', 'AVAILABLE'])
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const list: Produce[] = [];
-        snap.forEach((docSnap) => {
-          list.push(docSnap.data() as Produce);
-        });
-
-        // Merge with local newly created listings if any
-        const local = getStoredProduce().filter(
-          (p) => (p.status === 'ACTIVE' || p.status === 'AVAILABLE') && !list.some((l) => l.id === p.id)
-        );
-        return [...list, ...local];
-      }
-    } catch (err) {
-      console.warn('Firestore active produce query error, using local fallback', err);
-    }
+  try {
+    return await api.get<Produce[]>('/marketplace');
+  } catch (e) {
+    console.error('Error fetching marketplace produce', e);
+    return [];
   }
-
-  // Local storage / Demo mode fallback
-  const allProduce = getStoredProduce();
-  return allProduce.filter((p) => p.status === 'ACTIVE' || p.status === 'AVAILABLE');
 }
 
 export function filterAndSortMarketplaceProduce(
@@ -119,11 +100,6 @@ export function filterAndSortMarketplaceProduce(
         return b.availableQuantity - a.availableQuantity;
       case 'BEST_VALUE':
       default: {
-        // Best Value considers:
-        // - Quality grade tier weight (Export: 1.25, Grade A: 1.1, Grade B: 0.95)
-        // - Price competitiveness vs benchmark
-        // - Distance factor
-        // - Verified seller boost
         const gradeScore = (grade: string) =>
           grade.includes('Export') || grade.includes('Organic') ? 1.25 : grade.includes('Grade A') ? 1.1 : 0.95;
         const scoreA = (100 / a.expectedPrice) * gradeScore(a.qualityGrade) * (a.verifiedSeller ? 1.15 : 1.0) - distA * 0.05;

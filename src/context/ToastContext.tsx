@@ -9,6 +9,8 @@ export interface Toast {
   title: string;
   message?: string;
   duration?: number;
+  /** True while the exit animation is playing, just before real removal. */
+  leaving?: boolean;
 }
 
 interface ToastContextType {
@@ -19,11 +21,19 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
+// Matches .animate-toast-out's duration in src/index.css — the toast stays
+// mounted (marked `leaving`) for this long so the exit animation can play
+// instead of the card vanishing instantly.
+const TOAST_EXIT_MS = 200;
+
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, TOAST_EXIT_MS);
   }, []);
 
   const showToast = useCallback(
@@ -65,7 +75,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-elevated border transition-all duration-300 transform translate-y-0 ${bgColors[toast.type]}`}
+              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-elevated border ${toast.leaving ? 'animate-toast-out' : 'animate-toast-in'} ${bgColors[toast.type]}`}
             >
               {icons[toast.type]}
               <div className="flex-1 min-w-0">
@@ -75,7 +85,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 )}
               </div>
               <button
-                onClick={() => removeToast(toast.id)}
+                onClick={() => !toast.leaving && removeToast(toast.id)}
                 className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <X className="w-4 h-4" />

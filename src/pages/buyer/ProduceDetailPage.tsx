@@ -41,6 +41,7 @@ export const ProduceDetailPage: React.FC = () => {
   const { showToast } = useToast();
 
   const [item, setItem] = useState<Produce | undefined>(undefined);
+  const [alternativeSellers, setAlternativeSellers] = useState<Produce[]>([]);
   const [loading, setLoading] = useState(true);
   const [orderQuantity, setOrderQuantity] = useState<number>(100);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -83,11 +84,33 @@ export const ProduceDetailPage: React.FC = () => {
     return () => window.removeEventListener('vayora_produce_updated', loadItem);
   }, [id]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!item) {
+      setAlternativeSellers([]);
+      return;
+    }
+    const normCrop = item.cropName.toLowerCase().split(' ')[0];
+    getStoredProduce()
+      .then((allListings) => {
+        if (cancelled) return;
+        setAlternativeSellers(
+          allListings
+            .filter((p) => p.id !== item.id && p.cropName.toLowerCase().includes(normCrop) && p.availableQuantity > 0)
+            .slice(0, 3)
+        );
+      })
+      .catch((e) => console.error('Error fetching alternative sellers', e));
+    return () => {
+      cancelled = true;
+    };
+  }, [item]);
+
   if (loading) {
     return (
       <div className="p-20 text-center space-y-3">
         <div className="w-10 h-10 rounded-full border-4 border-brand-700 border-t-transparent animate-spin mx-auto" />
-        <p className="text-sm font-bold text-slate-700">Loading produce details from Firestore...</p>
+        <p className="text-sm font-bold text-slate-700">Loading produce details...</p>
       </div>
     );
   }
@@ -114,13 +137,6 @@ export const ProduceDetailPage: React.FC = () => {
   const platformFee = 100; // Flat direct trade platform facilitation
   const estimatedBuyerTotal = produceAmount + estimatedLogistics + platformFee;
   const farmerProceeds = produceAmount; // 100% direct produce value!
-
-  // Alternative sellers comparison for the same crop
-  const allListings = getStoredProduce();
-  const normCrop = item.cropName.toLowerCase().split(' ')[0];
-  const alternativeSellers = allListings
-    .filter((p) => p.id !== item.id && p.cropName.toLowerCase().includes(normCrop) && p.availableQuantity > 0)
-    .slice(0, 3);
 
   // Submit Offer
   const handleOpenOfferModal = () => {

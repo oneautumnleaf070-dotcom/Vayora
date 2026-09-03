@@ -29,6 +29,7 @@ export const RegisterPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [verifiedUid, setVerifiedUid] = useState<string>('');
+  const [devOtp, setDevOtp] = useState<string | undefined>(undefined);
 
   // Profile fields
   const [role, setRole] = useState<UserRole>('FARMER');
@@ -40,7 +41,7 @@ export const RegisterPage: React.FC = () => {
   const [longitude, setLongitude] = useState(73.7898);
   const [loading, setLoading] = useState(false);
 
-  // Step 1: Send Real Firebase Phone OTP
+  // Step 1: Provision (or reuse) a TOTP secret for this phone number
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     const formatted = normalizePhoneNumber(phone);
@@ -54,23 +55,24 @@ export const RegisterPage: React.FC = () => {
     try {
       const res = await sendOtp(formatted);
       if (res.success) {
+        setDevOtp(res.devOtp);
         setStep('otp');
-        showToast('info', 'OTP Sent', res.message);
+        showToast('info', 'Authenticator Code Ready', res.message);
       } else {
-        showToast('error', 'Failed to Send OTP', res.message);
+        showToast('error', 'Could Not Generate Code', res.message);
       }
     } catch (err: any) {
-      showToast('error', 'Error', err.message || 'Unable to send verification code. Please try again.');
+      showToast('error', 'Error', err.message || 'Unable to generate a verification code. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Verify Real Firebase SMS OTP
+  // Step 2: Verify the TOTP code from the authenticator app
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp || otp.trim().length < 6) {
-      showToast('error', 'Invalid Code', 'Please enter the 6-digit verification code sent to your phone.');
+      showToast('error', 'Invalid Code', 'Please enter the 6-digit code from your authenticator app.');
       return;
     }
 
@@ -191,7 +193,7 @@ export const RegisterPage: React.FC = () => {
                   />
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  We will send a 6-digit verification code via SMS to confirm your phone number.
+                  We use an authenticator app (Google Authenticator, Authy, etc.) to generate a 6-digit code to confirm your phone number — no SMS required.
                 </p>
               </div>
 
@@ -203,7 +205,7 @@ export const RegisterPage: React.FC = () => {
                 isLoading={loading}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Send Verification Code
+                Continue
               </Button>
             </form>
           )}
@@ -211,7 +213,7 @@ export const RegisterPage: React.FC = () => {
           {step === 'otp' && (
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="p-3 bg-brand-50 rounded-2xl border border-brand-200 text-xs text-brand-900 flex items-center justify-between">
-                <span>Sent SMS code to <strong>{phone}</strong></span>
+                <span>Authenticator code for <strong>{phone}</strong></span>
                 <button
                   type="button"
                   onClick={() => setStep('phone')}
@@ -221,9 +223,16 @@ export const RegisterPage: React.FC = () => {
                 </button>
               </div>
 
+              {devOtp && (
+                <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900">
+                  <p className="font-bold">Dev mode — current authenticator code</p>
+                  <p className="font-mono text-lg tracking-widest mt-1">{devOtp}</p>
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 block">
-                  Enter the 6-digit verification code
+                  Enter the 6-digit code from your authenticator app
                 </label>
                 <input
                   type="text"
@@ -347,7 +356,7 @@ export const RegisterPage: React.FC = () => {
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-[11px] text-slate-500">
             <Lock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Encrypted Firebase Authentication & Firestore Profile Persistence</span>
+            <span>Encrypted VAYORA Authentication & Profile Persistence</span>
           </div>
         </div>
 

@@ -1,16 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { User, UserRole } from '../types';
-import { auth, isFirebaseConfigured } from '../firebase/config';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { getToken, connectRealtime, disconnectRealtime } from '../api/client';
 import {
   sendPhoneOtp,
   verifyPhoneOtp,
   createUserProfileInFirestore,
   getUserProfileFromFirestore,
   signOutUser,
+  getSessionUser,
   RegisterUserInput,
   VerifyOtpResult,
-  setupRecaptcha,
 } from '../services/authService';
 
 interface AuthContextType {
@@ -19,7 +18,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   pendingPhoneUser: { uid: string; phone: string } | null;
-  sendOtp: (phone: string, containerId?: string) => Promise<{ success: boolean; message: string }>;
+  sendOtp: (
+    phone: string,
+    containerId?: string
+  ) => Promise<{ success: boolean; message: string; devOtp?: string; provisioningUri?: string; secret?: string }>;
   verifyOtp: (otp: string) => Promise<VerifyOtpResult>;
   completeProfile: (input: RegisterUserInput) => Promise<User>;
   logout: () => Promise<void>;
@@ -32,14 +34,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [pendingPhoneUser, setPendingPhoneUser] = useState<{ uid: string; phone: string } | null>(null);
+  // The mock-OTP flow (unlike Firebase's ConfirmationResult object) needs the
+  // phone number again at verify time — sendOtp stashes it here.
+  const pendingOtpPhoneRef = useRef<string>('');
 
   const refreshUser = useCallback(async () => {
-    if (auth && auth.currentUser) {
-      const profile = await getUserProfileFromFirestore(auth.currentUser.uid);
-      if (profile) {
-        setUser(profile);
-      } else {
-        setUser(null);
+    const token = getToken();
+    const cached = getSessionUser();
+    if (token && cached) {
+      try {
+        const fresh = await getUserProfileFromFirestore(cached.id);
+        setUser(fresh || cached);
+      } catch {
+        setUser(cached);
       }
     } else {
       setUser(null);
@@ -47,50 +54,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
-  // Listen to Firebase Auth state
+  // Restore session from a persisted JWT on first mount (replaces Firebase's
+  // onAuthStateChanged listener — a JWT is stateless, so "am I logged in?"
+  // is just "do I have a valid token", checked once here).
   useEffect(() => {
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, async (fbUser: FirebaseUser | null) => {
-        if (fbUser) {
-          try {
-            const profile = await getUserProfileFromFirestore(fbUser.uid);
-            if (profile) {
-              setUser(profile);
-              setPendingPhoneUser(null);
-            } else {
-              // User is authenticated via Phone OTP but profile not created yet in Firestore
-              setPendingPhoneUser({ uid: fbUser.uid, phone: fbUser.phoneNumber || '' });
-              setUser(null);
-            }
-          } catch (e) {
-            console.error('Error retrieving user profile from Firestore:', e);
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-          setPendingPhoneUser(null);
-        }
-        setLoading(false);
-      });
+    refreshUser();
+  }, [refreshUser]);
 
-      return () => unsubscribe();
+  useEffect(() => {
+    if (user) {
+      connectRealtime();
     } else {
-      setLoading(false);
+      disconnectRealtime();
     }
-  }, []);
+  }, [user]);
 
-  const sendOtp = async (phone: string, containerId: string = 'recaptcha-container') => {
-    const verifier = setupRecaptcha(containerId);
-    return sendPhoneOtp(phone, verifier);
+  const sendOtp = async (phone: string, _containerId?: string) => {
+    pendingOtpPhoneRef.current = phone;
+    return sendPhoneOtp(phone);
   };
 
   const verifyOtp = async (otp: string): Promise<VerifyOtpResult> => {
-    const result = await verifyPhoneOtp(otp);
+    const result = await verifyPhoneOtp(pendingOtpPhoneRef.current, otp);
     if (result.success && result.user) {
       setUser(result.user);
       setPendingPhoneUser(null);
     } else if (result.success && result.needsProfile && result.uid) {
-      setPendingPhoneUser({ uid: result.uid, phone: result.phone || '' });
+      setPendingPhoneUser({ uid: result.uid, phone: result.phone || pendingOtpPhoneRef.current });
     }
     return result;
   };

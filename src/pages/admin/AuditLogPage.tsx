@@ -85,9 +85,9 @@ export const AuditLogPage: React.FC = () => {
       case 'PAYMENT_MANUALLY_RELEASED':
         return <Badge variant="blue" size="sm">Escrow Released</Badge>;
       case 'PROFILE_EDITED':
-        return <Badge variant="gray" size="sm">Profile Edited</Badge>;
+        return <Badge variant="slate" size="sm">Profile Edited</Badge>;
       default:
-        return <Badge variant="gray" size="sm">{action}</Badge>;
+        return <Badge variant="slate" size="sm">{action}</Badge>;
     }
   };
 

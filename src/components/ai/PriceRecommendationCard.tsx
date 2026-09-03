@@ -5,7 +5,7 @@ import { formatINR } from '../../utils/helpers';
 import { DemandChart } from './DemandChart';
 
 export interface PriceRecommendationCardProps {
-  recommendation: AIPriceRecommendation & { source?: 'LIVE_GEMINI' | 'DEMO_AI_INSIGHT' | 'UNAVAILABLE' };
+  recommendation: AIPriceRecommendation & { source?: 'VAYORA_ENGINE' | 'LIVE_GEMINI' | 'DEMO_AI_INSIGHT' | 'UNAVAILABLE' };
   expectedPrice?: number;
   onAcceptPrice?: (price: number) => void;
   showForecastChart?: boolean;
@@ -23,7 +23,7 @@ export const PriceRecommendationCard: React.FC<PriceRecommendationCardProps> = (
     LOW: { bg: 'bg-slate-100 text-slate-700 border-slate-300', dot: 'bg-slate-500' },
   };
 
-  const isDemo = recommendation.source !== 'LIVE_GEMINI';
+  const isLive = recommendation.source === 'VAYORA_ENGINE' || recommendation.source === 'LIVE_GEMINI';
 
   return (
     <div className="space-y-4">
@@ -44,12 +44,12 @@ export const PriceRecommendationCard: React.FC<PriceRecommendationCardProps> = (
                 </span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold border ${
-                    isDemo
-                      ? 'bg-amber-400/20 text-amber-300 border-amber-400/30'
-                      : 'bg-emerald-400/20 text-emerald-300 border-emerald-400/30'
+                    isLive
+                      ? 'bg-emerald-400/20 text-emerald-300 border-emerald-400/30'
+                      : 'bg-amber-400/20 text-amber-300 border-amber-400/30'
                   }`}
                 >
-                  {isDemo ? 'Demo AI Insight' : 'Gemini 1.5 Flash AI'}
+                  {recommendation.source === 'LIVE_GEMINI' ? 'Gemini 1.5 Flash AI' : isLive ? 'VAYORA Pricing Engine' : 'Unavailable'}
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-0.5">

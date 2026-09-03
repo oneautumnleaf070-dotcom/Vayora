@@ -6,7 +6,6 @@ import {
   executeBulkOrderReservation,
   SmartMatchingResult,
 } from '../../services/matchingService';
-import { getStoredProduce } from '../../services/produceService';
 import {
   Layers,
   Sparkles,
@@ -77,9 +76,8 @@ export const BulkMatchingPage: React.FC = () => {
         setCurrentStepIndex(step);
       } else {
         clearInterval(interval);
-        // Execute explainable algorithm
-        const listings = getStoredProduce();
-        const result = matchBulkOrder({
+        // Execute the explainable matching algorithm server-side
+        matchBulkOrder({
           cropName,
           requiredQuantity: requiredKg,
           unit: 'kg',
@@ -88,11 +86,10 @@ export const BulkMatchingPage: React.FC = () => {
           deliveryLongitude: buyerLng,
           deliveryLocation,
           maxDistanceKm,
-          availableListings: listings,
-        });
-
-        setMatchResult(result);
-        setIsMatching(false);
+        })
+          .then((result) => setMatchResult(result))
+          .catch((err) => showToast('error', 'Matching Failed', err.message || 'Could not run the matching engine.'))
+          .finally(() => setIsMatching(false));
       }
     }, 280);
   };
@@ -520,7 +517,7 @@ export const BulkMatchingPage: React.FC = () => {
             <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-emerald-950 flex items-start gap-2">
               <Lock className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
               <span>
-                <strong>Atomic Inventory Reservation:</strong> Upon confirmation, Firestore will atomically deduct stock across all {matchResult.suppliers.length} producers. Funds will be deposited into <strong>VAYORA Smart Escrow</strong>.
+                <strong>Atomic Inventory Reservation:</strong> Upon confirmation, the server will atomically deduct stock across all {matchResult.suppliers.length} producers. Funds will be deposited into <strong>VAYORA Smart Escrow</strong>.
               </span>
             </div>
 

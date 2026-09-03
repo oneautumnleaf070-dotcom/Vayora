@@ -127,7 +127,7 @@ export const ProduceManagementPage: React.FC = () => {
       status: editQuantity === 0 ? 'SOLD_OUT' : editingProduce.status,
     });
 
-    showToast('success', 'Listing Updated', `${editingProduce.cropName} updated in Firestore.`);
+    showToast('success', 'Listing Updated', `${editingProduce.cropName} updated.`);
     setEditingProduce(null);
     loadData();
   };
@@ -146,7 +146,7 @@ export const ProduceManagementPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     await deleteProduce(id);
     setDeleteConfirmId(null);
-    showToast('success', 'Produce Deleted', 'Listing removed from Cloud Firestore.');
+    showToast('success', 'Produce Deleted', 'Listing removed.');
     loadData();
   };
 
@@ -173,7 +173,7 @@ export const ProduceManagementPage: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Real-time Firestore listings for <strong>{user?.name}</strong>. Manage stock, adjust prices, review AI indicative guidance, or delist lots.
+            Real-time listings for <strong>{user?.name}</strong>. Manage stock, adjust prices, review AI indicative guidance, or delist lots.
           </p>
         </div>
 
@@ -230,7 +230,7 @@ export const ProduceManagementPage: React.FC = () => {
                   <td colSpan={9} className="p-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <RefreshCw className="w-5 h-5 text-brand-700 animate-spin" />
-                      <span>Loading Produce from Cloud Firestore...</span>
+                      <span>Loading produce...</span>
                     </div>
                   </td>
                 </tr>
@@ -541,7 +541,7 @@ export const ProduceManagementPage: React.FC = () => {
                 Cancel
               </Button>
               <Button type="submit" variant="primary" className="flex-1">
-                Save to Firestore
+                Save Listing
               </Button>
             </div>
           </form>
@@ -554,7 +554,7 @@ export const ProduceManagementPage: React.FC = () => {
           isOpen={!!deleteConfirmId}
           onClose={() => setDeleteConfirmId(null)}
           title="Delete Produce Listing?"
-          subtitle="This action will delete the record from Cloud Firestore."
+          subtitle="This action will permanently delete this listing."
           maxWidth="sm"
         >
           <div className="space-y-4">

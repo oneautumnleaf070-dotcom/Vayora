@@ -18,12 +18,12 @@ import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { OtpInput } from '../../components/auth/OtpInput';
 import { useToast } from '../../context/ToastContext';
-import { setupRecaptcha, sendPhoneOtp, verifyPhoneOtp } from '../../services/authService';
+import { sendPhoneOtp, verifyPhoneOtp } from '../../services/authService';
 import { checkLogisticsRegistrationStatus } from '../../services/registrationService';
 
 export const LogisticsLoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, role, login } = useAuth();
+  const { user, role } = useAuth();
   const { showToast } = useToast();
 
   const [countryCode, setCountryCode] = useState('+91');
@@ -98,11 +98,6 @@ export const LogisticsLoginPage: React.FC = () => {
 
     setLoading(true);
     try {
-      try {
-        setupRecaptcha('logistics-recaptcha-container');
-      } catch (recaptchaErr) {
-        console.warn('reCAPTCHA setup warning:', recaptchaErr);
-      }
 
       const fullNumber = `${countryCode}${cleanPhone}`;
       const confirmationResult = await sendPhoneOtp(fullNumber);
@@ -141,17 +136,13 @@ export const LogisticsLoginPage: React.FC = () => {
       const fullNumber = `${countryCode}${cleanPhone}`;
       const isDemo = otp === '123456' || otp === '482915';
 
-      let userProfile;
-      if (!isDemo) {
-        const verifyRes = await verifyPhoneOtp(otp);
-        if (verifyRes.success && verifyRes.user) {
-          userProfile = verifyRes.user;
-        } else {
-          userProfile = await login(fullNumber, 'LOGISTICS');
-        }
-      } else {
-        userProfile = await login(fullNumber, 'LOGISTICS');
+      const verifyRes = await verifyPhoneOtp(fullNumber, otp);
+      if (!verifyRes.success || !verifyRes.user) {
+        setError('OTP verification failed. Please try again.');
+        return;
       }
+
+      const userProfile = verifyRes.user;
 
       if (userProfile.role !== 'LOGISTICS' && userProfile.role !== 'ADMIN') {
         // Check if there is an active application pending
@@ -208,11 +199,9 @@ export const LogisticsLoginPage: React.FC = () => {
   const handleQuickDemoLogisticsLogin = async () => {
     setLoading(true);
     try {
-      await login('+919833344556', 'LOGISTICS');
-      showToast('success', 'Demo Carrier Access', 'Signed in as VAYORA Logistics Partner.');
-      navigate('/logistics/dashboard', { replace: true });
-    } catch (e: any) {
-      setError(e.message || 'Demo login failed');
+      setOtp('123456');
+      setStep('OTP');
+      showToast('success', 'Demo Mode', 'Use OTP: 123456');
     } finally {
       setLoading(false);
     }

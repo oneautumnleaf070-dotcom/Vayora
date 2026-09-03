@@ -111,7 +111,7 @@ export const AdminUserDetailPage: React.FC = () => {
       <div className="p-8 text-center space-y-4">
         <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
         <h3 className="text-base font-bold text-slate-900">User Profile Not Found</h3>
-        <p className="text-xs text-slate-500">The user document does not exist in Firestore.</p>
+        <p className="text-xs text-slate-500">No user record exists with this ID.</p>
         <Link to="/admin/users">
           <Button variant="outline" size="sm" leftIcon={<ArrowLeft className="w-4 h-4" />}>
             Back to Directory

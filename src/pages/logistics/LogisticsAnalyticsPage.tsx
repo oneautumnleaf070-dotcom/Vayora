@@ -105,8 +105,8 @@ export const LogisticsAnalyticsPage: React.FC = () => {
         <StatCard
           title="Deliveries Completed"
           value={analytics ? `${analytics.completedThisMonth}` : '32'}
-          change="This Month"
-          trend="up"
+          subtitle="This Month"
+          trend={{ value: "+5 vs Last Week", isPositive: true }}
           icon={<Truck className="w-6 h-6 text-blue-600" />}
           accentColor="blue"
         />
@@ -114,8 +114,8 @@ export const LogisticsAnalyticsPage: React.FC = () => {
         <StatCard
           title="On-Time Delivery Rate"
           value={analytics ? `${analytics.onTimeRate}%` : '98.6%'}
-          change="+1.2% vs Benchmark"
-          trend="up"
+          subtitle="+1.2% vs Benchmark"
+          trend={{ value: "+1.2%", isPositive: true }}
           icon={<Clock className="w-6 h-6 text-emerald-600" />}
           accentColor="green"
         />
@@ -123,8 +123,8 @@ export const LogisticsAnalyticsPage: React.FC = () => {
         <StatCard
           title="Driver Trust Rating"
           value={analytics ? `${analytics.averageRating} ⭐` : '4.9 ⭐'}
-          change="54 Reviews"
-          trend="up"
+          subtitle="54 Reviews"
+          trend={{ value: "+0.2 pts", isPositive: true }}
           icon={<Star className="w-6 h-6 text-amber-500 fill-amber-500" />}
           accentColor="amber"
         />
@@ -132,10 +132,10 @@ export const LogisticsAnalyticsPage: React.FC = () => {
         <StatCard
           title="Total Earnings Realized"
           value={analytics ? formatINR(analytics.totalEarnings) : '₹48,500'}
-          change="100% Cleared Escrow"
-          trend="up"
+          subtitle="100% Cleared Escrow"
+          trend={{ value: "+₹2,500", isPositive: true }}
           icon={<IndianRupee className="w-6 h-6 text-teal-600" />}
-          accentColor="teal"
+          accentColor="amber"
         />
       </div>
 

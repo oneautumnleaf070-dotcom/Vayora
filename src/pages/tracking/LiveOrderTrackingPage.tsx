@@ -24,28 +24,16 @@ import { OrderTimeline } from '../../components/orders/OrderTimeline';
 import { QRDisplay } from '../../components/qr/QRDisplay';
 import { formatINR } from '../../utils/helpers';
 
-import { db, isFirebaseConfigured } from '../../firebase/config';
-import { doc, onSnapshot } from 'firebase/firestore';
-
 export const LiveOrderTrackingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<Order | undefined>(undefined);
   const [routeData, setRouteData] = useState<RouteOptimizationResult | null>(null);
 
-  const fetchRoute = async (o: Order) => {
-    const startLat = o.pickupCoords?.lat || (o.bulkSuppliers && o.bulkSuppliers[0]?.latitude) || 13.0827;
-    const startLng = o.pickupCoords?.lng || (o.bulkSuppliers && o.bulkSuppliers[0]?.longitude) || 80.2707;
-    const endLat = o.deliveryCoords?.lat || o.deliveryLatitude || 13.0400;
-    const endLng = o.deliveryCoords?.lng || o.deliveryLongitude || 80.2100;
-    const wpCoords: [number, number][] = (o.bulkSuppliers || []).map((s) => [s.latitude, s.longitude]);
-
-    try {
-      const res = await optimizeRoute(startLat, startLng, endLat, endLng, wpCoords);
-      setRouteData(res);
-    } catch (e) {
-      console.warn('Error computing live route:', e);
+  useEffect(() => {
+    if (id) {
+      loadOrder(id);
     }
-  };
+  }, [id]);
 
   const loadOrder = async (orderId: string) => {
     const found = await getOrderById(orderId);
@@ -55,39 +43,16 @@ export const LiveOrderTrackingPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (!id) return;
+  const fetchRoute = async (o: Order) => {
+    const startLat = o.pickupCoords?.lat || (o.bulkSuppliers && o.bulkSuppliers[0]?.latitude) || 13.0827;
+    const startLng = o.pickupCoords?.lng || (o.bulkSuppliers && o.bulkSuppliers[0]?.longitude) || 80.2707;
+    const endLat = o.deliveryCoords?.lat || o.deliveryLatitude || 13.0400;
+    const endLng = o.deliveryCoords?.lng || o.deliveryLongitude || 80.2100;
+    const wpCoords: [number, number][] = (o.bulkSuppliers || []).map((s) => [s.latitude, s.longitude]);
 
-    loadOrder(id);
-
-    const handleLocalUpdate = () => loadOrder(id);
-    window.addEventListener('vayora_orders_updated', handleLocalUpdate);
-
-    let unsubscribeFirestore: (() => void) | undefined;
-    if (isFirebaseConfigured() && db) {
-      try {
-        const orderRef = doc(db, 'orders', id);
-        unsubscribeFirestore = onSnapshot(orderRef, (snap) => {
-          if (snap.exists()) {
-            const liveOrder = snap.data() as Order;
-            setOrder(liveOrder);
-            fetchRoute(liveOrder);
-          }
-        }, (err) => {
-          console.warn('Firestore tracking onSnapshot error:', err);
-        });
-      } catch (e) {
-        console.warn('Could not attach Firestore onSnapshot listener:', e);
-      }
-    }
-
-    return () => {
-      window.removeEventListener('vayora_orders_updated', handleLocalUpdate);
-      if (unsubscribeFirestore) {
-        unsubscribeFirestore();
-      }
-    };
-  }, [id]);
+    const res = await optimizeRoute(startLat, startLng, endLat, endLng, wpCoords);
+    setRouteData(res);
+  };
 
   if (!order) {
     return (

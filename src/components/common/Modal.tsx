@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/helpers';
 
@@ -19,6 +19,28 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = 'lg',
 }) => {
+  // Two-phase enter/exit (prototyped in scratch/01-motion-system): `mounted`
+  // keeps the dialog in the DOM long enough to play its exit transition
+  // instead of vanishing instantly; `entered` is the class that actually
+  // drives the transition, flipped a frame after mount so the browser has a
+  // "from" state to transition away from.
+  const [mounted, setMounted] = useState(isOpen);
+  const [entered, setEntered] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setMounted(true);
+      const raf = requestAnimationFrame(() => setEntered(true));
+      return () => cancelAnimationFrame(raf);
+    }
+    if (mounted) {
+      setEntered(false);
+      const timeout = setTimeout(() => setMounted(false), 200);
+      return () => clearTimeout(timeout);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -33,7 +55,7 @@ export const Modal: React.FC<ModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!mounted) return null;
 
   const maxWidthStyles = {
     sm: 'max-w-sm',
@@ -49,14 +71,18 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
+        className={cn(
+          'fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200 ease-fluid',
+          entered ? 'opacity-100' : 'opacity-0'
+        )}
         onClick={onClose}
       />
 
       {/* Modal dialog */}
       <div
         className={cn(
-          'relative bg-white rounded-3xl shadow-2xl border border-slate-200/90 w-full overflow-hidden z-10 transition-all transform scale-100 my-8',
+          'relative bg-white rounded-3xl shadow-2xl border border-slate-200/90 w-full overflow-hidden z-10 transition-all duration-200 ease-fluid my-8',
+          entered ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2',
           maxWidthStyles[maxWidth]
         )}
       >

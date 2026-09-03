@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { auth } from '../../firebase/config';
 import { UserRole } from '../../types';
 import {
   Sprout,
@@ -67,7 +66,7 @@ export const CompleteProfilePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const effectiveUid = pendingPhoneUser?.uid || (auth?.currentUser?.uid || '');
+    const effectiveUid = pendingPhoneUser?.uid || '';
     if (!effectiveUid) {
       showToast('error', 'Authentication Required', 'Please verify your mobile number first.');
       navigate('/login');
@@ -96,7 +95,7 @@ export const CompleteProfilePage: React.FC = () => {
       showToast('success', 'Profile Created', `Welcome to VAYORA, ${createdUser.name}!`);
       redirectUser(createdUser.role);
     } catch (err: any) {
-      showToast('error', 'Profile Setup Failed', err.message || 'Could not save Firestore profile.');
+      showToast('error', 'Profile Setup Failed', err.message || 'Could not save your profile.');
     } finally {
       setLoading(false);
     }
@@ -140,7 +139,7 @@ export const CompleteProfilePage: React.FC = () => {
           Complete Your VAYORA Profile
         </h2>
         <p className="text-xs text-slate-500">
-          Phone Verified via Firebase: <strong className="text-slate-800">{phone || 'Verified'}</strong>
+          Phone Verified: <strong className="text-slate-800">{phone || 'Verified'}</strong>
         </p>
       </div>
 
