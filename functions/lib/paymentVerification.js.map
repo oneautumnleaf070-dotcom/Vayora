@@ -1,0 +1,1 @@
+{"version":3,"file":"paymentVerification.js","sourceRoot":"","sources":["../src/paymentVerification.ts"],"names":[],"mappings":";;AAAA,4DAaC;AAbD,SAAgB,wBAAwB,CAAC,MAKxC;IACC,OAAO;QACL,QAAQ,EAAE,IAAI;QACd,OAAO,EAAE,MAAM,CAAC,OAAO;QACvB,MAAM,EAAE,gBAAgB;QACxB,aAAa,EAAE,MAAM,CAAC,aAAa;QACnC,SAAS,EAAE,IAAI,IAAI,EAAE,CAAC,WAAW,EAAE;KACpC,CAAC;AACJ,CAAC"}

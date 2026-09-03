@@ -61,7 +61,8 @@ export function verifyDeliverySecurely(input: BackendVerifyInput): {
   }
 
   // 4. Anti-Replay Protection: Single-use check (Requirement 11 & 22)
-  if (delivery.verificationStatus === 'VERIFIED' || delivery.status === 'DELIVERED') {
+  const completedStatuses = ['DELIVERED', 'ARRIVED'];
+  if (delivery.verificationStatus === 'VERIFIED' || completedStatuses.includes(delivery.status as string)) {
     return {
       success: false,
       message: 'Replay Protection: This delivery has already been verified and completed.',
@@ -78,7 +79,7 @@ export function verifyDeliverySecurely(input: BackendVerifyInput): {
     const matchesHash = delivery.qrTokenHash && delivery.qrTokenHash === hashedToken;
     const isDemoToken = qrToken.includes('demo');
 
-    if (!matchesHash && !matchesPlain && !isDemoToken) {
+    if (!matchesHash && !isDemoToken) {
       return { success: false, message: 'Invalid or tampered QR token. Verification rejected.' };
     }
   } else if (verificationMethod === 'OTP') {
